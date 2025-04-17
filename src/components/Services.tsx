@@ -1,4 +1,4 @@
- import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Typewriter } from 'react-simple-typewriter';
 
@@ -29,7 +29,9 @@ const Services = () => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false); // 👈 para controlar fade-in inicial
   const duration = 8000;
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]).current;
 
   const resetTimeout = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -38,6 +40,7 @@ const Services = () => {
       setTimeout(() => {
         setCurrent((prev) => (prev + 1) % slides.length);
         setIsTransitioning(false);
+        setHasStarted(true); // 👈 después del primer cambio, ya no aplicar fade-in inicial
       }, 1200);
     }, duration);
   };
@@ -52,6 +55,7 @@ const Services = () => {
     setTimeout(() => {
       setCurrent(index);
       setIsTransitioning(false);
+      setHasStarted(true);
     }, 1200);
   };
 
@@ -88,6 +92,7 @@ const Services = () => {
           />
         </motion.p>
 
+        {/* SLIDER */}
         <div className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-2xl overflow-hidden shadow-xl bg-black transition-all duration-500">
           {/* Flechas */}
           <motion.button
@@ -121,7 +126,7 @@ const Services = () => {
             />
           )}
 
-          {/* Videos en paralelo con opacidad */}
+          {/* VIDEO CON PRELOAD Y FADE */}
           <div className="absolute top-0 left-0 w-full h-full z-10">
             {slides.map((slide, index) => (
               <video
@@ -131,15 +136,20 @@ const Services = () => {
                 muted
                 loop
                 playsInline
+                preload="auto"
+                onCanPlay={() => index === current && videoRefs[index]?.play()}
+                ref={(el) => (videoRefs[index] = el)}
                 className={`w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-700 ${
-                  index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                  index === current
+                    ? `${!hasStarted && index === 0 ? 'opacity-0 animate-fade-in' : 'opacity-100 z-10'}`
+                    : 'opacity-0 z-0'
                 }`}
               />
             ))}
             <div className="absolute inset-0 bg-black/40 z-20" />
           </div>
 
-          {/* Texto */}
+          {/* TEXTO */}
           <motion.div
             key={slides[current].title}
             initial={{ opacity: 0, y: 30 }}
@@ -156,7 +166,7 @@ const Services = () => {
           </motion.div>
         </div>
 
-        {/* Progreso */}
+        {/* PROGRESO */}
         <div className="flex justify-center gap-3 mt-6">
           {slides.map((_, i) => (
             <div key={i} className="relative w-16 h-1 bg-athenia-100 overflow-hidden rounded-full">
