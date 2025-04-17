@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+ import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Typewriter } from 'react-simple-typewriter';
 
@@ -28,7 +28,6 @@ const slides = [
 const Services = () => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const duration = 8000;
 
@@ -46,11 +45,6 @@ const Services = () => {
   useEffect(() => {
     resetTimeout();
     return () => clearTimeout(timeoutRef.current!);
-  }, [current]);
-
-  useEffect(() => {
-    videoRef.current?.load();
-    videoRef.current?.play();
   }, [current]);
 
   const changeSlide = (index: number) => {
@@ -95,9 +89,10 @@ const Services = () => {
         </motion.p>
 
         <div className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-2xl overflow-hidden shadow-xl bg-black transition-all duration-500">
+          {/* Flechas */}
           <motion.button
             onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
             whileHover={{ scale: 1.1 }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +102,7 @@ const Services = () => {
 
           <motion.button
             onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
             whileHover={{ scale: 1.1 }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,35 +110,42 @@ const Services = () => {
             </svg>
           </motion.button>
 
+          {/* Cortina animada */}
           {isTransitioning && (
             <motion.div
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
               exit={{ width: '0%' }}
               transition={{ duration: 1.2, ease: 'easeInOut' }}
-              className="absolute top-0 left-0 h-full bg-athenia-400 z-30"
+              className="absolute top-0 left-0 h-full bg-athenia-400 z-20"
             />
           )}
 
+          {/* Videos en paralelo con opacidad */}
           <div className="absolute top-0 left-0 w-full h-full z-10">
-            <video
-              ref={videoRef}
-              src={slides[current].video}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover transition-opacity duration-700"
-            />
-            <div className="absolute inset-0 bg-black/40" />
+            {slides.map((slide, index) => (
+              <video
+                key={slide.video}
+                src={slide.video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className={`w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-700 ${
+                  index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+              />
+            ))}
+            <div className="absolute inset-0 bg-black/40 z-20" />
           </div>
 
+          {/* Texto */}
           <motion.div
             key={slides[current].title}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="absolute bottom-6 left-6 right-6 text-left z-20"
+            className="absolute bottom-6 left-6 right-6 text-left z-30"
           >
             <h3 className="text-white text-xl md:text-2xl font-semibold drop-shadow-md">
               {slides[current].title}
@@ -154,6 +156,7 @@ const Services = () => {
           </motion.div>
         </div>
 
+        {/* Progreso */}
         <div className="flex justify-center gap-3 mt-6">
           {slides.map((_, i) => (
             <div key={i} className="relative w-16 h-1 bg-athenia-100 overflow-hidden rounded-full">
@@ -169,6 +172,7 @@ const Services = () => {
           ))}
         </div>
 
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -194,5 +198,3 @@ const Services = () => {
 };
 
 export default Services;
-
-  
