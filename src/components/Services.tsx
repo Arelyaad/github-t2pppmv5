@@ -28,6 +28,7 @@ const slides = [
 const Services = () => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const duration = 8000;
 
@@ -45,6 +46,11 @@ const Services = () => {
   useEffect(() => {
     resetTimeout();
     return () => clearTimeout(timeoutRef.current!);
+  }, [current]);
+
+  useEffect(() => {
+    videoRef.current?.load();
+    videoRef.current?.play();
   }, [current]);
 
   const changeSlide = (index: number) => {
@@ -67,7 +73,6 @@ const Services = () => {
         viewport={{ once: true }}
         className="max-w-5xl mx-auto text-center"
       >
-        {/* Título */}
         <motion.h2
           whileHover={{ scale: 1.02, textShadow: '0 0 10px rgba(64,102,131,0.3)' }}
           className="text-3xl md:text-4xl font-bold text-athenia-400 mb-6 transition-all"
@@ -75,16 +80,13 @@ const Services = () => {
           Nuestros Servicios
         </motion.h2>
 
-        {/* Subtítulo */}
         <motion.p
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.3 }}
           className="text-athenia-300 text-lg mb-10 max-w-xl mx-auto"
         >
           <Typewriter
-            words={[
-              'Soluciones de IA que transforman tu negocio de manera simple y efectiva',
-            ]}
+            words={['Soluciones de IA que transforman tu negocio de manera simple y efectiva']}
             loop={0}
             typeSpeed={40}
             deleteSpeed={0}
@@ -92,9 +94,7 @@ const Services = () => {
           />
         </motion.p>
 
-        {/* Slider */}
         <div className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-2xl overflow-hidden shadow-xl bg-black transition-all duration-500">
-          {/* Flechas */}
           <motion.button
             onClick={prevSlide}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
@@ -115,7 +115,6 @@ const Services = () => {
             </svg>
           </motion.button>
 
-          {/* Cortina animada */}
           {isTransitioning && (
             <motion.div
               initial={{ width: '0%' }}
@@ -126,21 +125,19 @@ const Services = () => {
             />
           )}
 
-          {/* Video */}
           <div className="absolute top-0 left-0 w-full h-full z-10">
             <video
-              key={slides[current].video}
+              ref={videoRef}
               src={slides[current].video}
               autoPlay
               muted
               loop
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-opacity duration-700"
             />
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          {/* Texto */}
           <motion.div
             key={slides[current].title}
             initial={{ opacity: 0, y: 30 }}
@@ -157,7 +154,6 @@ const Services = () => {
           </motion.div>
         </div>
 
-        {/* Progreso */}
         <div className="flex justify-center gap-3 mt-6">
           {slides.map((_, i) => (
             <div key={i} className="relative w-16 h-1 bg-athenia-100 overflow-hidden rounded-full">
@@ -173,7 +169,6 @@ const Services = () => {
           ))}
         </div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -199,3 +194,5 @@ const Services = () => {
 };
 
 export default Services;
+
+  
