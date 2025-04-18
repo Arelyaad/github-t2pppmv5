@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
 import { Typewriter } from 'react-simple-typewriter';
 
 const slides = [
@@ -28,20 +29,15 @@ const slides = [
 const Services = () => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); // 👈 para controlar fade-in inicial
+  const [hasStarted, setHasStarted] = useState(false);
   const duration = 8000;
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]).current;
 
   const resetTimeout = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % slides.length);
-        setIsTransitioning(false);
-        setHasStarted(true); // 👈 después del primer cambio, ya no aplicar fade-in inicial
-      }, 1200);
+      setCurrent((prev) => (prev + 1) % slides.length);
+      setHasStarted(true);
     }, duration);
   };
 
@@ -51,16 +47,19 @@ const Services = () => {
   }, [current]);
 
   const changeSlide = (index: number) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrent(index);
-      setIsTransitioning(false);
-      setHasStarted(true);
-    }, 1200);
+    setCurrent(index);
+    setHasStarted(true);
   };
 
   const nextSlide = () => changeSlide((current + 1) % slides.length);
   const prevSlide = () => changeSlide((current - 1 + slides.length) % slides.length);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: nextSlide,
+    onSwipedRight: prevSlide,
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true,
+  });
 
   return (
     <section className="relative bg-gradient-to-b from-[#e3edf5] to-white py-20 px-4 overflow-hidden">
@@ -93,11 +92,11 @@ const Services = () => {
         </motion.p>
 
         {/* SLIDER */}
-        <div className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-2xl overflow-hidden shadow-xl bg-black transition-all duration-500">
-          {/* Flechas */}
+        <div {...handlers} className="relative h-[220px] md:h-[280px] lg:h-[320px] rounded-2xl overflow-hidden shadow-xl bg-black transition-all duration-500">
+          {/* Flechas ocultables en móviles */}
           <motion.button
             onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
+            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
             whileHover={{ scale: 1.1 }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +106,7 @@ const Services = () => {
 
           <motion.button
             onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
+            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-white/20 text-white p-2 rounded-full backdrop-blur-sm shadow-md"
             whileHover={{ scale: 1.1 }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,18 +114,7 @@ const Services = () => {
             </svg>
           </motion.button>
 
-          {/* Cortina animada */}
-          {isTransitioning && (
-            <motion.div
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              exit={{ width: '0%' }}
-              transition={{ duration: 1.2, ease: 'easeInOut' }}
-              className="absolute top-0 left-0 h-full bg-athenia-400 z-20"
-            />
-          )}
-
-          {/* VIDEO CON PRELOAD Y FADE */}
+          {/* Video background */}
           <div className="absolute top-0 left-0 w-full h-full z-10">
             {slides.map((slide, index) => (
               <video
@@ -140,16 +128,14 @@ const Services = () => {
                 onCanPlay={() => index === current && videoRefs[index]?.play()}
                 ref={(el) => (videoRefs[index] = el)}
                 className={`w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-700 ${
-                  index === current
-                    ? `${!hasStarted && index === 0 ? 'opacity-0 animate-fade-in' : 'opacity-100 z-10'}`
-                    : 'opacity-0 z-0'
+                  index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
                 }`}
               />
             ))}
             <div className="absolute inset-0 bg-black/40 z-20" />
           </div>
 
-          {/* TEXTO */}
+          {/* Texto */}
           <motion.div
             key={slides[current].title}
             initial={{ opacity: 0, y: 30 }}
@@ -166,7 +152,7 @@ const Services = () => {
           </motion.div>
         </div>
 
-        {/* PROGRESO */}
+        {/* Progreso */}
         <div className="flex justify-center gap-3 mt-6">
           {slides.map((_, i) => (
             <div key={i} className="relative w-16 h-1 bg-athenia-100 overflow-hidden rounded-full">
